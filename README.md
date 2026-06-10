@@ -48,3 +48,14 @@ Märkus: Exceli ehitusskript kasutab `@oai/artifact-tool` teeki. Kui see ei ole 
 ## Tundlikkus
 
 Kaust sisaldab hinnakirja ja Plastoki materjalibaasi. Enne avalikku GitHubi üleslaadimist kontrolli, kas repo peab olema privaatne.
+
+## GitHubi üleslaadimine
+
+Soovitus: loo privaatne GitHub repository ja laadi selle kausta sisu repo juurkausta.
+
+Kui kasutad GitHubi veebiliidest:
+
+1. Ava GitHubis uus või olemasolev privaatne repository.
+2. Vali `Add file` -> `Upload files`.
+3. Laadi üles kogu selle kausta sisu, mitte kaust ise.
+4. Commit message näiteks: `Add Plastok-Zenith product database package`.

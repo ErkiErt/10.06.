@@ -1,4 +1,2 @@
-streamlit
 openpyxl
 pypdf
-pandas
