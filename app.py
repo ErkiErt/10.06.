@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+import glob
+import os
 
 st.set_page_config(
     page_title="Zenith Kataloogi Tootebaas",
@@ -7,22 +9,36 @@ st.set_page_config(
     layout="wide"
 )
 
-XLSX_PATH = "outputs/zenith_catalog_database_20260609/Zenith_Kataloogi_Tootebaas_2026-06-09.xlsx"
+# --- Dünaamiline failitee: leiab uusima .xlsx faili outputs/ alt ---
+def find_latest_xlsx(base_dir="outputs"):
+    pattern = os.path.join(base_dir, "**", "*.xlsx")
+    files = glob.glob(pattern, recursive=True)
+    if not files:
+        return None
+    return max(files, key=os.path.getmtime)
+
+XLSX_PATH = find_latest_xlsx()
 
 @st.cache_data
-def load_sheet(sheet_name):
-    return pd.read_excel(XLSX_PATH, sheet_name=sheet_name, dtype=str).fillna("")
+def load_sheet(path, sheet_name):
+    return pd.read_excel(path, sheet_name=sheet_name, dtype=str).fillna("")
 
 @st.cache_data
-def get_sheet_names():
-    xl = pd.ExcelFile(XLSX_PATH)
+def get_sheet_names(path):
+    xl = pd.ExcelFile(path)
     return xl.sheet_names
 
 st.title("🔍 Zenith Kataloogi Tootebaas")
 st.caption("Plastok OÜ — Zenith 2026 materjalibaas")
 
+if XLSX_PATH is None:
+    st.error("❌ Exceli faili ei leitud kaustas 'outputs/'. Kontrolli, kas fail on üles laaditud.")
+    st.stop()
+
+st.caption(f"📂 Aktiivne fail: `{XLSX_PATH}`")
+
 try:
-    sheet_names = get_sheet_names()
+    sheet_names = get_sheet_names(XLSX_PATH)
 except Exception as e:
     st.error(f"Exceli faili laadimine ebaõnnestus: {e}")
     st.stop()
@@ -40,18 +56,24 @@ with st.sidebar:
         st.download_button(
             label="⬇️ Laadi Excel alla",
             data=f,
-            file_name="Zenith_Kataloogi_Tootebaas_2026-06-09.xlsx",
+            file_name=os.path.basename(XLSX_PATH),
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
 
 # Lae valitud leht
-df = load_sheet(leht)
+try:
+    df = load_sheet(XLSX_PATH, leht)
+except Exception as e:
+    st.error(f"Lehe '{leht}' laadimine ebaõnnestus: {e}")
+    st.stop()
 
 # Rakenda otsing
 if otsing.strip():
-    mask = df.apply(lambda col: col.str.contains(otsing, case=False, na=False)).any(axis=1)
+    mask = df.apply(
+        lambda col: col.str.contains(otsing, case=False, na=False, regex=False)
+    ).any(axis=1)
     df_filtered = df[mask]
-    st.info(f"Otsing '{otsing}' — leiti {len(df_filtered)} rida (kokku {len(df)})")  
+    st.info(f"Otsing '{otsing}' — leiti {len(df_filtered)} rida (kokku {len(df)})")
 else:
     df_filtered = df
 
