@@ -1,0 +1,13 @@
+{
+  "name": "plastok-zenith-tootebaas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "extract": "python scripts/extract_zenith_sources.py",
+    "build": "node scripts/build_zenith_catalog_database.mjs"
+  },
+  "dependencies": {
+    "@oai/artifact-tool": "^2.8.3"
+  }
+}
